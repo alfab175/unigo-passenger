@@ -1,0 +1,65 @@
+name: UNIGO Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.2'
+          channel: stable
+          cache: true
+
+      - name: Get packages
+        run: flutter pub get
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Generate Gradle wrapper
+        working-directory: android
+        run: gradle wrapper --gradle-version 8.7
+
+      - name: Configure Android local.properties
+        run: echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
+
+      - name: Inject Google Maps key when provided
+        env:
+          GOOGLE_MAPS_ANDROID_KEY: ${{ secrets.GOOGLE_MAPS_ANDROID_KEY }}
+        run: |
+          if [ -n "$GOOGLE_MAPS_ANDROID_KEY" ]; then
+            python3 - <<'PY'
+from pathlib import Path
+p=Path('android/app/src/main/res/values/strings.xml')
+s=p.read_text()
+s=s.replace('REPLACE_WITH_GOOGLE_MAPS_KEY', '${{ secrets.GOOGLE_MAPS_ANDROID_KEY }}')
+p.write_text(s)
+PY
+          fi
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: unigo-passenger-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error

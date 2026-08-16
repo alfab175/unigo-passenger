@@ -1,0 +1,42 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isSelf(uid) { return signedIn() && request.auth.uid == uid; }
+    function isAdmin() { return signedIn() && request.auth.token.admin == true; }
+
+    match /users/{uid} {
+      allow read: isSelf(uid) || isAdmin();
+      allow create: isSelf(uid);
+      allow update: isSelf(uid) && request.resource.data.role == resource.data.role;
+      allow delete: isSelf(uid);
+    }
+
+    match /app_config/{doc} {
+      allow read: signedIn();
+      allow write: isAdmin();
+    }
+
+    match /drivers/{driverId} {
+      allow read: signedIn();
+      allow write: isAdmin();
+    }
+
+    match /stations/{stationId} {
+      allow read: signedIn();
+      allow write: isAdmin();
+    }
+
+    match /rides/{rideId} {
+      allow create: signedIn() && request.resource.data.userId == request.auth.uid;
+      allow read: signedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow update: signedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    match /payments/{paymentId} {
+      allow read: signedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: signedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: isAdmin();
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "525816533038",
+    "project_id": "unigo-27b2a",
+    "storage_bucket": "unigo-27b2a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:525816533038:android:432ef2f3f11622dd218fbf",
+        "android_client_info": {
+          "package_name": "com.unigo.passenger"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJpj9MSvxt9Y0jUhxeMOBR6S6sl8qgyVc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
