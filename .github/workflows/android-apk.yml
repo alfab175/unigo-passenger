@@ -28,15 +28,6 @@ jobs:
       - name: Get packages
         run: flutter pub get
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.10.2'
-
-      - name: Generate Gradle wrapper
-        working-directory: android
-        run: gradle wrapper --gradle-version 8.10.2
-
       - name: Configure Android local.properties
         run: echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
 
