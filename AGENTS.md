@@ -35,10 +35,19 @@
 - Reviews/ratings submission UI not yet built.
 
 ## Build
-- APK via GitHub Actions workflow `android-apk.yml` (auto-runs on push to main; also manual dispatch). Artifact `unigo-passenger-apk`.
+- APK via GitHub Actions workflow `android-apk.yml` (auto-runs on push to main; also manual dispatch). Artifact `unigo-passenger-apk` (release, ~26 MB). ✅ Working as of 2026-08-16.
 - Requires secret `GOOGLE_MAPS_ANDROID_KEY` (Android-restricted Maps key). `strings.xml` has placeholder replaced at build time.
 - Android manifest is v2 embedding (`flutterEmbedding=2`), adaptive launcher icon (`mipmap-anydpi-v26`), styles + launch_background present.
 - No Flutter SDK locally assumed; edits made in source. To run tests locally: `flutter test test/route_service_test.dart`.
+- **Toolchain versions (CI must match these for a successful APK build):**
+  - Flutter 3.47.0 (Dart 3.13.0) — earlier 3.35.2 fails: plugins need KGP ≥ 2.0 (`compilerOptions{}` DSL), only in Flutter ≥ 3.44.
+  - Gradle wrapper 8.14.3 (Flutter 3.47 requires Gradle ≥ 8.14.0). `android/gradle/wrapper/gradle-wrapper.properties`.
+  - Android Gradle Plugin 8.13.1 (Flutter 3.47 requires AGP ≥ 8.11.1). Declared in `android/settings.gradle` plugins block.
+  - Kotlin Gradle Plugin 2.3.20 (Flutter 3.47 recommends ≥ 2.3.20; resolved plugins declare KGP 2.3.x). Registered as `org.jetbrains.kotlin.android` in `settings.gradle` and applied in `android/app/build.gradle`.
+  - `compileSdk 36` (package_info_plus requires SDK 36). `targetSdk 35`, `minSdk 23`.
+  - `android/gradle.properties` provides `-Xmx4G -XX:MaxMetaspaceSize=1G` for the Gradle daemon (without it the release build dies with GC thrashing / OOM).
+  - `android/settings.gradle` `dependencyResolutionManagement.repositories` includes `https://storage.googleapis.com/download.flutter.io` (Flutter engine embedding `io.flutter:flutter_embedding_release` lives there; with `PREFER_SETTINGS` mode the top-level `build.gradle` repos are ignored, so it MUST be in settings).
+  - `android/app/build.gradle` sets `compileOptions` Java 17 + `kotlin.compilerOptions.jvmTarget = JVM_17` (otherwise Java=1.8 vs Kotlin=17 mismatch fails `compileReleaseKotlin`).
 
 ## Conventions
 - Turkish UI strings.
