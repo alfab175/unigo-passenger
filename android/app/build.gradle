@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace 'com.unigo.passenger'
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
         applicationId 'com.unigo.passenger'
