@@ -38,5 +38,32 @@ service cloud.firestore {
       allow create: signedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: isAdmin();
     }
+
+    match /thoughts/{thoughtId} {
+      allow read: signedIn();
+      allow create: signedIn() && request.resource.data.userId == request.auth.uid;
+      allow delete: signedIn() && resource.data.userId == request.auth.uid;
+      // Authors may edit their own text; anyone signed in may only touch the
+      // like fields (the app updates them via a like-once-per-user transaction).
+      allow update: signedIn() && (
+        resource.data.userId == request.auth.uid ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likedBy', 'likeCount'])
+      );
+    }
+
+    match /news/{articleId} {
+      allow read: signedIn();
+      allow write: isAdmin();
+    }
+
+    match /thought_reports/{reportId} {
+      allow create: signedIn() && request.resource.data.reportedBy == request.auth.uid;
+      allow read, update, delete: isAdmin();
+    }
+
+    match /news_reports/{reportId} {
+      allow create: signedIn() && request.resource.data.reportedBy == request.auth.uid;
+      allow read, update, delete: isAdmin();
+    }
   }
 }

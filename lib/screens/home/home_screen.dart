@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
-import '../../core/config.dart';
 import '../../models/driver.dart';
 import '../../services/driver_service.dart';
 import '../../services/favorite_service.dart';
@@ -10,6 +9,7 @@ import '../../utils/format.dart';
 import '../../widgets/ad_carousel.dart';
 import '../../widgets/driver_side_panel.dart';
 import '../../widgets/unigo_logo.dart';
+import 'feed_sheet.dart';
 
 /// UNIGO home: live map, smart destination search, green route, and two
 /// driver panels (left = taxis, right = private hire).
@@ -32,6 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool locating = false, searching = false, panelsOpen = false;
   bool leftCollapsed = false, rightCollapsed = false;
   String sort = 'distance';
+  int feedTab = 0;
 
   final _drivers = DriverService();
   final _favorites = FavoriteService();
@@ -268,19 +269,21 @@ class _HomeScreenState extends State<HomeScreen> {
               showStationSearch: false,
             ),
           ] else ...[
-            // Nearby list (pre-route state) at bottom.
-            Positioned(left: 16, right: 16, bottom: 16, child: _NearbySheet(
+            // Bottom feed (pre-route state): drivers / news / thoughts tabs.
+            Positioned(left: 16, right: 16, bottom: 16, child: FeedSheet(
               drivers: _sorted(all),
               sort: sort,
               onSort: (v) => setState(() => sort = v),
               onCall: _call,
               onFavorite: (d) => _favorites.toggle(d.id),
               favorites: favs,
+              tab: feedTab,
+              onTab: (t) => setState(() => feedTab = t),
             )),
           ],
 
-          // Ad carousel — Apple-style, hidden when panels are open.
-          if (!adsHidden)
+          // Ad carousel — Apple-style, hidden when panels or feed tabs are open.
+          if (!adsHidden && feedTab == 0)
             Positioned(
               left: 0,
               right: 0,
@@ -365,64 +368,4 @@ class _ConfirmPin extends StatelessWidget {
           ]),
         ),
       );
-}
-
-class _NearbySheet extends StatelessWidget {
-  const _NearbySheet({required this.drivers, required this.sort, required this.onSort, required this.onCall, required this.onFavorite, required this.favorites});
-  final List<Driver> drivers;
-  final String sort;
-  final ValueChanged<String> onSort;
-  final void Function(Driver) onCall;
-  final void Function(Driver) onFavorite;
-  final Set<String> favorites;
-  @override
-  Widget build(BuildContext context) {
-    final within = drivers.where((d) => d.distanceKm <= AppConfig.defaultProximityKm).toList();
-    final list = within.isEmpty ? drivers.take(5).toList() : within;
-    return Container(
-      constraints: const BoxConstraints(maxHeight: 280),
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.97),
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 30)],
-      ),
-      child: Column(children: [
-        Row(children: [
-          const Expanded(child: Text('Yakındaki seçenekler', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800))),
-          PopupMenuButton<String>(
-            onSelected: onSort,
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: 'distance', child: Text('Yakından uzağa')),
-              PopupMenuItem(value: 'price', child: Text('En ucuzdan pahalıya')),
-              PopupMenuItem(value: 'rating', child: Text('Puanı yüksekten düşüğe')),
-            ],
-            child: const Icon(Icons.tune_rounded),
-          ),
-        ]),
-        const SizedBox(height: 6),
-        Expanded(child: list.isEmpty
-          ? const Center(child: Text('Şu anda yakında uygun araç bulunamadı.'))
-          : ListView.separated(
-              itemCount: list.length,
-              itemBuilder: (_, i) {
-                final d = list[i];
-                final fav = favorites.contains(d.id);
-                return ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.person_rounded),
-                  title: Text(d.name, style: const TextStyle(fontWeight: FontWeight.w700)),
-                  subtitle: Text('${d.provider} • ${formatDistance(d.distanceKm)} • ★ ${d.rating.toStringAsFixed(1)}'),
-                  trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                    IconButton(icon: Icon(fav ? Icons.star_rounded : Icons.star_border_rounded, color: fav ? Colors.amber : null), onPressed: () => onFavorite(d)),
-                    Text('₺${d.estimatedFare.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.w800)),
-                  ]),
-                  onTap: () => onCall(d),
-                );
-              },
-              separatorBuilder: (_, __) => const Divider(height: 1),
-            )),
-      ]),
-    );
-  }
 }

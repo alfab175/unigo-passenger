@@ -53,3 +53,10 @@
 - Turkish UI strings.
 - Compact code style (one-liner widgets common in repo).
 - Services injected with optional `FirebaseFirestore`/`FirebaseAuth` for testability.
+
+## 2026-08-19 — v1.9.2 (thoughts + news rebuilt with bug fixes)
+- **IMPORTANT incident**: the previous session built "v1.9.1" (versionCode 16) entirely in its runtime and never pushed; that session broke and the source was LOST. v1.9.1 had: flutter_map migration, 8-language i18n, stations, news, thoughts, ride tracking/history, settings screen, premium upgrade flow, Inter fonts. ALWAYS PUSH WORK TO GITHUB at the end of every session.
+- Rebuilt on top of main (still google_maps_flutter): `thoughts` feed (share appends; like = one-per-user Firestore transaction over `likedBy` + `likeCount`, tap again to unlike; delete own; report others), `news` feed (⋮ menu: Kaydet via SharedPreferences / Şikayet et → `news_reports`; inline ad card every 3rd article; interstitial ad sheet every 3rd article open; local fallback articles when `news` collection is empty), Apple-style `AppleSegmentedControl`, `AdCard` + `defaultAdCreatives`, Inter fonts (400-800), `formatTimeAgo` util. Home bottom sheet is now `FeedSheet` with tabs [Araçlar|Haberler|Düşünceler]; ad carousel hidden unless tab==0.
+- Firestore rules added: `thoughts` (like-fields-only updates for non-authors), `news` (admin write), `thought_reports`, `news_reports`. **Rules must be published in Firebase console** (no deploy from CI).
+- Version bumped to 1.9.2+17 to continue from the lost 1.9.1(16).
+- Local toolchain for verify: Flutter 3.47.0 at /tmp/flutter (`flutter analyze lib/`, `flutter test`) — SDK is NOT committed.

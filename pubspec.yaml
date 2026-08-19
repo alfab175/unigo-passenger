@@ -1,7 +1,7 @@
 name: unigo_passenger
 description: UNIGO passenger application
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.9.2+17
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
@@ -32,3 +32,17 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-400.ttf
+          weight: 400
+        - asset: assets/fonts/Inter-500.ttf
+          weight: 500
+        - asset: assets/fonts/Inter-600.ttf
+          weight: 600
+        - asset: assets/fonts/Inter-700.ttf
+          weight: 700
+        - asset: assets/fonts/Inter-800.ttf
+          weight: 800
