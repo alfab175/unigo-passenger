@@ -1,9 +1,16 @@
+import java.util.Properties
+
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'com.google.gms.google-services'
     id 'dev.flutter.flutter-gradle-plugin'
 }
+
+def keyProps = new Properties()
+def keyPropsFile = rootProject.file('key.properties')
+if (keyPropsFile.exists()) keyPropsFile.withReader { keyProps.load(it) }
+def hasReleaseKey = keyProps.getProperty('storeFile') != null
 
 android {
     namespace 'com.unigo.passenger'
@@ -15,6 +22,21 @@ android {
         targetSdk 35
         versionCode 1
         versionName '1.0.0'
+    }
+
+    signingConfigs {
+        release {
+            storeFile hasReleaseKey ? file(rootProject.file(keyProps['storeFile'])) : null
+            storePassword keyProps['storePassword']
+            keyAlias keyProps['keyAlias']
+            keyPassword keyProps['keyPassword']
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig hasReleaseKey ? signingConfigs.release : signingConfigs.debug
+        }
     }
 
     compileOptions {

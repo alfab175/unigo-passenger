@@ -60,3 +60,8 @@
 - Firestore rules added: `thoughts` (like-fields-only updates for non-authors), `news` (admin write), `thought_reports`, `news_reports`. **Rules must be published in Firebase console** (no deploy from CI).
 - Version bumped to 1.9.2+17 to continue from the lost 1.9.1(16).
 - Local toolchain for verify: Flutter 3.47.0 at /tmp/flutter (`flutter analyze lib/`, `flutter test`) — SDK is NOT committed.
+
+## 2026-08-22 — Release signing fixed ("invalid package" errors)
+- v1.9.2 wouldn't install over v1.9.1: release builds without a signingConfig get signed with each machine's random debug key, and Android rejects updates with a different signer. We now restore a real keystore in CI from secrets (`UNIGO_RELEASE_KEYSTORE_B64`, `UNIGO_KEYSTORE_PASSWORD`, `UNIGO_KEY_PASSWORD`, `UNIGO_KEY_ALIAS`) → `android/key.properties` → `android/unigo-release.jks`; `build.gradle` uses it when present, else falls back to debug. **Permanent signing keys**: local keystore at /tmp/unigo-release.jks (regeneratable but then everyone must reinstall again), passwords only in secrets.
+- The first install must be a fresh install (uninstall old UNIGO once); after that updates will install seamlessly.
+- `android/key.properties` and `android/*.jks` are git-ignored.

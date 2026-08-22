@@ -39,6 +39,21 @@ jobs:
             sed -i "s|REPLACE_WITH_GOOGLE_MAPS_KEY|${GOOGLE_MAPS_ANDROID_KEY}|g" \\
               android/app/src/main/res/values/strings.xml
           fi
+      - name: Restore release signing key
+        env:
+          UNIGO_RELEASE_KEYSTORE_B64: ${{ secrets.UNIGO_RELEASE_KEYSTORE_B64 }}
+          UNIGO_KEYSTORE_PASSWORD: ${{ secrets.UNIGO_KEYSTORE_PASSWORD }}
+          UNIGO_KEY_PASSWORD: ${{ secrets.UNIGO_KEY_PASSWORD }}
+          UNIGO_KEY_ALIAS: ${{ secrets.UNIGO_KEY_ALIAS }}
+        run: |
+          if [ -n "$UNIGO_RELEASE_KEYSTORE_B64" ]; then
+            echo "$UNIGO_RELEASE_KEYSTORE_B64" | base64 -d > android/unigo-release.jks
+            printf 'storeFile=unigo-release.jks\nstorePassword=%s\nkeyPassword=%s\nkeyAlias=%s\n' \
+              "$UNIGO_KEYSTORE_PASSWORD" "$UNIGO_KEY_PASSWORD" "$UNIGO_KEY_ALIAS" > android/key.properties
+          else
+            echo 'UNIGO_RELEASE_KEYSTORE_B64 secret missing; falling back to debug signing.'
+          fi
+
       - name: Build release APK
         run: flutter build apk --release
 
